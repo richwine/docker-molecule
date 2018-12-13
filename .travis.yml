@@ -1,4 +1,7 @@
 ---
+# Managing Open-Source Docker Images on Docker Hub using Travis
+# https://medium.com/vaidikkapoor/managing-open-source-docker-images-on-docker-hub-using-travis-7fd33bc96d65
+language: bash
 services: docker
 
 before_install:
@@ -6,12 +9,22 @@ before_install:
   - sudo apt-get update
   - sudo apt-get -y -o Dpkg::Options::="--force-confnew" install docker-ce
 
+env:
+  matrix:
+  - VERSION=2.4.*
+  - VERSION=2.5.*
+  - VERSION=2.6.*
+  - VERSION=2.7.*
+
 script:
   # Test building Dockerfile.
-  - docker build -t docker-ansible .
+  - docker build . -t "$VERSION" --build-arg version=$VERSION
+
+after_script:
+  - docker images
 
   # Test running the container.
-  - docker run --name test-container -d --privileged -v /sys/fs/cgroup:/sys/fs/cgroup:ro
+  # - docker run --name test-container -d --privileged -v /sys/fs/cgroup:/sys/fs/cgroup:ro
 
   # Verify Ansible is available in the container.
   # - docker exec --tty test-container env TERM=xterm ansible --version
